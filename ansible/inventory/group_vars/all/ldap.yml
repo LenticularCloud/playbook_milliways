@@ -1,0 +1,122 @@
+---
+
+slapd_domain: '{{ bootstrap__domain }}'
+slapd_base: 'dc=milliways,dc=info'
+
+slapd_ldapscripts_server: 'ldap://ldap.vms.{{ bootstrap__domain }}'
+#secret_ldap_server_uri: '{{ "ldap://" + secret_ldap_server + "/" }}'
+secret_ldap_server_uri: '{{ slapd_ldapscripts_server }}'
+secret_ldap_basedn: '{{ slapd_base }}'
+secret_ldap_delegate_to: 'ldap.vms.{{ bootstrap__domain }}'
+sshd__ldap_bind_dn: 'cn=posix,{{ slapd_base }}'
+sshd__ldap_filter: '(&(objectClass=posixAccount)(uid=$username))'
+auth_nslcd_base:
+  - 'ou=users,dc=posix,{{ slapd_base }}'
+  - 'ou=groups,dc=posix,{{ slapd_base }}'
+
+# List of Debian/Ubuntu packages installed by debops.auth
+auth_packages: [ 'sudo', 'libpam-cracklib', 'python-ldap' ]
+
+auth_nsswitch: [ 'compat' ]
+
+auth_ldap_conf_domain: 'posix.{{ bootstrap__domain }}'
+auth_ldap_conf_hostdn:
+  - 'ou=users'
+
+auth_nslcd_bind_host_basedn: 'ou=users,dc=posix,{{ secret_ldap_basedn }}'
+# Host account name
+#auth_nslcd_bind_host_cn: 'uid=root'
+auth_nslcd_bind_host_dn: 'cn=posix,{{ slapd_base }}'
+
+# FQDN address of a LDAP server to configure in /etc/nslcd.conf
+auth_nslcd_ldap_server: 'ldap.local'
+
+# List of LDAP servers to connect to
+auth_nslcd_uri: [ 'ldap://{{ auth_nslcd_ldap_server }}/' ]
+
+# User account needs to have host= attribute
+auth_nslcd_pam_authz_search_host: '(&(objectClass=posixAccount)(uid=$username)'
+
+# User account needs to to have authorizedService= attribute
+auth_nslcd_pam_authz_search_service: '(&(objectClass=posixAccount)(uid=$username)'
+
+# User account needs to have both host= and authorizedService= attributes
+auth_nslcd_pam_authz_search_host_and_service: '(&(objectClass=posixAccount)(uid=$username))'
+
+
+slapd_snapshot_period: 'weekly'
+
+slapd_ldap_index_default:
+
+  - 'objectClass eq'
+  - 'cn eq,pres'
+  - 'gn eq,pres'
+  - 'sn eq,pres'
+  - 'uid eq'
+  - 'uidNumber eq'
+  - 'gidNumber eq'
+  - 'memberUid eq'
+  - 'host eq'
+  - 'entryCSN eq'
+  - 'entryUUID eq'
+
+slapd_ldap_access_control_list_default:
+
+  - |
+    to attrs=userPassword,shadowLastChange
+    by {{ slapd_acl_tls_ssf }} self write
+    by {{ slapd_acl_tls_ssf }} anonymous auth
+    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
+    by * none
+
+  - |
+    to attrs=uid,uidNumber,gidNumber,homeDirectory,loginShell
+    by {{ slapd_acl_tls_ssf }} self read
+    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
+    by {{ slapd_acl_tls_ssf }} users read
+
+  - |
+    to dn.subtree="dc=posix,{{ slapd_base }}"
+    by {{ slapd_acl_tls_ssf }} self write
+    by {{ slapd_acl_tls_ssf }} dn="uid=root,ou=users,dc=posix,{{ slapd_base }}" write
+    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
+    by {{ slapd_acl_tls_ssf }} dn="cn=posix,{{ slapd_base }}" write
+  - |
+    to dn.subtree="dc=radicale,{{ slapd_base }}"
+    by {{ slapd_acl_tls_ssf }} self write
+    by {{ slapd_acl_tls_ssf }} dn="uid=radicale,ou=machines,{{ slapd_base }}" read
+    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
+  - |
+    to dn.subtree="dc=mail,{{ slapd_base }}"
+    by {{ slapd_acl_tls_ssf }} self write
+    by {{ slapd_acl_tls_ssf }} dn="uid=mail,ou=machines,{{ slapd_base }}" read
+    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
+  - |
+    to dn.subtree="dc=jabber,{{ slapd_base }}"
+    by {{ slapd_acl_tls_ssf }} self write
+    by {{ slapd_acl_tls_ssf }} dn="uid=jabber,ou=machines,{{ slapd_base }}" read
+    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
+    by {{ slapd_acl_tls_ssf }} dn="cn=prosody,{{ slapd_base }}" read
+
+
+  - |
+    to dn.base=""
+    by {{ slapd_acl_tls_ssf }} * read
+
+  - |
+    to *
+    by {{ slapd_acl_tls_ssf }} self read
+    by {{ slapd_acl_tls_ssf }} dn.subtree="ou=Machines,{{ slapd_basedn }}" read
+    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
+    by * none
+
+slapd_ldap_schema:
+  - '/etc/ldap/schema/asterisk.ldif'
+  - '/etc/ldap/schema/lenticular.ldif'
+
+   # Additional attributes and classes for LDAP Name Service
+#  - '/usr/local/etc/ldap/schema/ldapns.ldif'
+    # Support for SSH Public Key lookup in LDAP
+  - '/usr/local/etc/ldap/schema/openssh-lpk.ldif'
+
+tcpwrappers__deny_all: False

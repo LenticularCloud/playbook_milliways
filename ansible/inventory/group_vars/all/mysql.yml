@@ -1,0 +1,4 @@
+---
+
+mariadb__server: db
+mariadb__delegate_to: db

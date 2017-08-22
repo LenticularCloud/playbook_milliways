@@ -1,0 +1,43 @@
+dn: cn=lenticular,cn=schema,cn=config
+objectClass: olcSchemaConfig
+cn: lenticular
+olcAttributeTypes: ( 1.3.6.1.4.1.18060.0.4.3.2.1
+        NAME 'masterPasswordEnable'
+        DESC 'is the master password enabled'
+        EQUALITY booleanMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+        SINGLE-VALUE )
+olcAttributeTypes: ( 1.3.6.1.4.1.18060.0.4.3.2.2
+        NAME 'authRole'
+        DESC 'is the master password enabled'
+        EQUALITY caseIgnoreMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+olcAttributeTypes: ( 1.3.6.1.4.1.18060.0.4.3.2.3
+        NAME ( 'altMail' )
+        DESC 'RFC1274: RFC822 Mailbox'
+        EQUALITY caseIgnoreIA5Match
+        SUBSTR caseIgnoreIA5SubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.26{256} )
+olcAttributeTypes: ( 1.3.6.1.4.1.18060.0.4.3.2.4
+        NAME 'gpgPublicKey'
+        DESC 'pgpPublicKey as ascii text'
+        EQUALITY octetStringMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.40 )
+olcObjectClasses: ( 1.3.6.1.4.1.18060.0.4.3.3.1
+        NAME 'service'
+        DESC 'schema for a service'
+        SUP top STRUCTURAL
+        MUST uid
+        MAY ( masterPasswordEnable $ mail ) )
+olcObjectClasses: ( 1.3.6.1.4.1.18060.0.4.3.3.2
+        NAME 'LenticularUser'
+        DESC 'a Lenticular user'
+        SUP top AUXILIARY
+        MUST uid
+        MAY ( authRole $ altMail $ gpgPublicKey ) )
+olcObjectClasses: ( 1.3.6.1.4.1.18060.0.4.3.3.3
+        NAME 'LenticularGroup'
+        DESC 'a Lenticular group'
+        SUP top AUXILIARY
+        MUST cn
+        MAY ( authRole ) )

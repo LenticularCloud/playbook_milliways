@@ -1,0 +1,4 @@
+---
+
+nginx__flavor_packages: [ 'nginx-extras' ]
+

@@ -1,0 +1,13 @@
+---
+
+
+#slapd_ldap_schema:
+# - '/usr/local/etc/ldap/schema/ldapns.ldif'
+# - '/usr/local/etc/ldap/schema/openssh-lpk.ldif'
+# - '/etc/ldap/schema/lenticular.ldif'
+# - '/etc/ldap/schema/asterisk.ldif'
+
+resources__files:
+  - src: '{{ resources__src }}etc/ldap'
+    dest: '/etc/'
+

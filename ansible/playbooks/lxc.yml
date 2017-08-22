@@ -1,0 +1,30 @@
+---
+
+
+- hosts: [ 'cloud_main' ]
+  vars:
+    services: "{{ groups['lxc'] }}"
+  tasks:
+    - name: install lxc
+      apt:
+        name: '{{ item }}'
+        state: 'present'
+      with_items:
+        - python-lxc
+        - lxc
+
+    - name: create lxc container
+      lxc_container:
+        name: '{{ item }}'
+        container_log: true
+        template: 'download'
+        template_options: --dist debian --release stretch --arch amd64
+      with_items: '{{ services }}'
+
+    - name: enable lxc containers
+      service:
+        name: 'lxc@{{ item }}'
+        enabled: 'yes'
+        state: 'started'
+      with_items: '{{ services }}'
+

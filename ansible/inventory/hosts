@@ -14,5 +14,63 @@
 # Your host is eligible to be managed by DebOps' common playbook. If you want
 # that functionality and more, then uncomment your hostname below.
 
-[debops_all_hosts]
-#tardis ansible_connection=local
+[lxc]
+monitor ansible_ssh_extra_args=monitor
+ldap    ansible_ssh_extra_args=ldap
+www     ansible_ssh_extra_args=www
+shell   ansible_ssh_extra_args=shell
+vpn     ansible_ssh_extra_args=vpn
+db      ansible_ssh_extra_args=db
+mail    ansible_ssh_extra_args=mail
+
+[debops_all_hosts:children]
+cloud_main
+
+[debops_all_hosts:children]
+lxc
+
+[lxc:vars]
+ansible_connection=lxc_ssh
+#ansible_ssh_common_args='-o ProxyCommand "ssh root@123.123.123.124 nc %h 22"'
+#milliways.info
+
+[all:vars]
+ansible_host=123.123.123.121
+bootstrap__domain=milliways.info
+
+### role groups
+[cloud_main]
+milliways.info
+
+[debops_service_ifupdown:children]
+cloud_main
+
+[debops_service_nginx:children]
+cloud_main
+
+[debops_service_dnsmasq:children]
+cloud_main
+
+[debops_service_lxc:children]
+cloud_main
+
+[debops_prometheus:children]
+cloud_main
+
+[debops_cloudldapadmin]
+www
+
+[debops_service_dovecot]
+mail
+
+[debops_service_mariadb_server]
+db
+
+[debops_prometheus_server]
+monitor
+
+[debops_service_postfix]
+mail
+
+[debops_service_slapd]
+ldap

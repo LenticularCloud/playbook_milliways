@@ -1,0 +1,22 @@
+parameters:
+    ldap_host: ldap.local
+    ldap_port: 389
+    ldap_bind_rdn: 'cn=admin,dc=cloud,dc=lan'
+    ldap_bind_pw: ':H76cBlPo2lErl3VDGJXVbl9tJtnW1nE57vWCy,:,vS-u-9xyxNXS0BUl,hM77i0xa3sA0Bpwh1sUlmooNdBJ2Mud_LklcIcaS3uBpZEO-VNyeXNRtQHUpfITXQpQevo'
+    ldap_base_dn: 'dc=cloud,dc=lan'
+    ldap_ssl: true
+    domain: example.org
+    mailer_transport: smtp
+    mailer_host: 127.0.0.1
+    mailer_user: null
+    mailer_password: null
+    locale: en
+    secret: ThisTokenIsNotSoSecretChangeIt
+    trusted_proxies: null
+    database_driver: 'pdo_mysql'
+    database_path: null
+    database_host: 'mysql'
+    database_port: null
+    database_name: "cloudadmin"
+    database_user: "cloudadmin"
+    database_password: "{{ lookup( 'file', secret + '/mariadb/db/credentials/cloudadmin/password' ) }}"

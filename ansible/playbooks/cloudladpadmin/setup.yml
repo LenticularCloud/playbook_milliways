@@ -1,0 +1,39 @@
+---
+
+ - name: clone git repo
+   git:
+     repo: https://github.com/LenticularCloud/Cloud-Ldap-Admin
+     dest: '{{ cloudldapadmin_dir }}'
+   register: cloudldapadmin_git
+     #     key_file=/home/{{ web_user }}/.ssh/id_rsa
+     #     accept_hostkey=true
+     #   become: true
+     #   become_user: "{{ web_user }}"
+
+ - name: copy config
+   template:
+     src: '../../templates/cloudldapadmin/parameters.yml.j2'
+     dest: '{{ cloudldapadmin_dir }}/app/config/parameters.yml'
+     owner: '{{ cloudadmin_user }}'
+     group: '{{ cloudadmin_user }}'
+   register: cloudldapadmin_config
+
+ - name: setup
+   shell: '{{ item }}'
+   args:
+     chdir: '{{ cloudldapadmin_dir }}'
+   with_items:
+     - /usr/local/bin/composer install
+     - php app/console doctrine:cache:clear-query -e prod
+     - php app/console doctrine:schema:update --force
+     - php app/console cache:clear -e prod
+     - php app/console assetic:dump -e prod
+   when: False and (cloudldapadmin_git.changed or cloudldapadmin_config.changed)
+
+#- name: set ownership
+#  file:
+#    path: /srv/www/sites/cloudadmin
+#    owner: '{{ cloudadmin_user }}'
+#    group: '{{ cloudadmin_user }}'
+#    recurse: yes
+#

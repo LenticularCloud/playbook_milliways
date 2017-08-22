@@ -1,0 +1,25 @@
+---
+
+lxc_interface_external: br2
+
+ifupdown__host_interfaces:
+  'br2':
+    inet: 'static'
+    inet6: 'static'
+    addresses: [ '192.168.201.1/24'] #, '2001:db8:feed:beef::1/64' ]
+    nat: True
+    state: 'present'
+
+
+nginx__servers:
+  - enabled: True
+    name: [ 'monitor.milliways.info' ]
+    acme: False #@TODO
+    type: 'proxy'
+    proxy_pass: 'http://monitor:3000'
+  - enabled: True
+    name: [ 'account.milliways.info' ]
+    acme: False #@TODO
+    type: 'proxy'
+    proxy_pass: 'https://cloudldapadmin.www.milliways.info'
+
