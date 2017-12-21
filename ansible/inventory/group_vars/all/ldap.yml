@@ -1,18 +1,19 @@
 ---
 
 slapd_domain: '{{ bootstrap__domain }}'
-slapd_base: 'dc=milliways,dc=info'
+slapd_host: 'ldap.{{ slapd_domain }}'
 
-slapd_ldapscripts_server: 'ldap://ldap.vms.{{ bootstrap__domain }}'
+slapd_ldapscripts_server: 'ldap://{{ slapd_host }}'
 #secret_ldap_server_uri: '{{ "ldap://" + secret_ldap_server + "/" }}'
 secret_ldap_server_uri: '{{ slapd_ldapscripts_server }}'
-secret_ldap_basedn: '{{ slapd_base }}'
-secret_ldap_delegate_to: 'ldap.vms.{{ bootstrap__domain }}'
-sshd__ldap_bind_dn: 'cn=posix,{{ slapd_base }}'
+slapd_basedn: '{{ "dc=" + slapd_domain.split(".") | join(",dc=") }}' #usable for other services
+secret_ldap_basedn: '{{ slapd_basedn }}'
+secret_ldap_delegate_to: 'ldap.{{ bootstrap__domain }}'
+sshd__ldap_bind_dn: 'cn=posix,{{ slapd_basedn }}'
 sshd__ldap_filter: '(&(objectClass=posixAccount)(uid=$username))'
 auth_nslcd_base:
-  - 'ou=users,dc=posix,{{ slapd_base }}'
-  - 'ou=groups,dc=posix,{{ slapd_base }}'
+  - 'ou=users,dc=posix,{{ slapd_basedn }}'
+  - 'ou=groups,dc=posix,{{ slapd_basedn }}'
 
 # List of Debian/Ubuntu packages installed by debops.auth
 auth_packages: [ 'sudo', 'libpam-cracklib', 'python-ldap' ]
@@ -26,10 +27,10 @@ auth_ldap_conf_hostdn:
 auth_nslcd_bind_host_basedn: 'ou=users,dc=posix,{{ secret_ldap_basedn }}'
 # Host account name
 #auth_nslcd_bind_host_cn: 'uid=root'
-auth_nslcd_bind_host_dn: 'cn=posix,{{ slapd_base }}'
+auth_nslcd_bind_host_dn: 'cn=posix,{{ slapd_basedn }}'
 
 # FQDN address of a LDAP server to configure in /etc/nslcd.conf
-auth_nslcd_ldap_server: 'ldap.local'
+auth_nslcd_ldap_server: '{{ slapd_host }}'
 
 # List of LDAP servers to connect to
 auth_nslcd_uri: [ 'ldap://{{ auth_nslcd_ldap_server }}/' ]
@@ -43,6 +44,8 @@ auth_nslcd_pam_authz_search_service: '(&(objectClass=posixAccount)(uid=$username
 # User account needs to have both host= and authorizedService= attributes
 auth_nslcd_pam_authz_search_host_and_service: '(&(objectClass=posixAccount)(uid=$username))'
 
+
+slapd_pki_realm: 'ldap.{{ ansible_domain }}'
 
 slapd_snapshot_period: 'weekly'
 
@@ -76,29 +79,34 @@ slapd_ldap_access_control_list_default:
     by {{ slapd_acl_tls_ssf }} users read
 
   - |
-    to dn.subtree="dc=posix,{{ slapd_base }}"
+    to dn.subtree="dc=posix,{{ slapd_basedn }}"
     by {{ slapd_acl_tls_ssf }} self write
-    by {{ slapd_acl_tls_ssf }} dn="uid=root,ou=users,dc=posix,{{ slapd_base }}" write
+    by {{ slapd_acl_tls_ssf }} dn="uid=root,ou=users,dc=posix,{{ slapd_basedn }}" write
     by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
-    by {{ slapd_acl_tls_ssf }} dn="cn=posix,{{ slapd_base }}" write
+    by {{ slapd_acl_tls_ssf }} dn="cn=posix,{{ slapd_basedn }}" write
   - |
-    to dn.subtree="dc=radicale,{{ slapd_base }}"
+    to dn.subtree="dc=radicale,{{ slapd_basedn }}"
     by {{ slapd_acl_tls_ssf }} self write
-    by {{ slapd_acl_tls_ssf }} dn="uid=radicale,ou=machines,{{ slapd_base }}" read
-    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
-  - |
-    to dn.subtree="dc=mail,{{ slapd_base }}"
-    by {{ slapd_acl_tls_ssf }} self write
-    by {{ slapd_acl_tls_ssf }} dn="uid=mail,ou=machines,{{ slapd_base }}" read
+    by {{ slapd_acl_tls_ssf }} dn="uid=root,ou=users,dc=radicale,{{ slapd_basedn }}" read
+    by {{ slapd_acl_tls_ssf }} dn="uid=radicale,ou=machines,{{ slapd_basedn }}" read
     by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
   - |
-    to dn.subtree="dc=jabber,{{ slapd_base }}"
+    to dn.subtree="dc=mail,{{ slapd_basedn }}"
     by {{ slapd_acl_tls_ssf }} self write
-    by {{ slapd_acl_tls_ssf }} dn="uid=jabber,ou=machines,{{ slapd_base }}" read
+    by {{ slapd_acl_tls_ssf }} dn="uid=mail,ou=machines,{{ slapd_basedn }}" read
     by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
-    by {{ slapd_acl_tls_ssf }} dn="cn=prosody,{{ slapd_base }}" read
-
-
+  - |
+    to dn.subtree="dc=jabber,{{ slapd_basedn }}"
+    by {{ slapd_acl_tls_ssf }} self write
+    by {{ slapd_acl_tls_ssf }} dn="uid=jabber,ou=machines,{{ slapd_basedn }}" read
+    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
+    by {{ slapd_acl_tls_ssf }} dn="uid=root,ou=users,dc=jabber,{{ slapd_basedn }}" read
+  - |
+    to dn.subtree="dc=git_gogs,{{ slapd_basedn }}"
+    by {{ slapd_acl_tls_ssf }} self write
+    by {{ slapd_acl_tls_ssf }} dn="uid=git_gogs,ou=machines,{{ slapd_basedn }}" read
+    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
+    by {{ slapd_acl_tls_ssf }} dn="uid=root,ou=users,dc=git_gogs,{{ slapd_basedn }}" read
   - |
     to dn.base=""
     by {{ slapd_acl_tls_ssf }} * read
@@ -115,8 +123,8 @@ slapd_ldap_schema:
   - '/etc/ldap/schema/lenticular.ldif'
 
    # Additional attributes and classes for LDAP Name Service
-#  - '/usr/local/etc/ldap/schema/ldapns.ldif'
+  - '/usr/local/etc/ldap/schema/ldapns.ldif'
     # Support for SSH Public Key lookup in LDAP
   - '/usr/local/etc/ldap/schema/openssh-lpk.ldif'
 
-tcpwrappers__deny_all: False
+#tcpwrappers__deny_all: False

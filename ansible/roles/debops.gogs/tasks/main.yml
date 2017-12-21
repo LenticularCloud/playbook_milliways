@@ -1,0 +1,60 @@
+---
+
+
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ gogs__base_packages }}'
+
+- user:
+    name: '{{ gogs_user }}'
+    groups:
+      - 'sshusers'
+      - 'ssl-cert'
+
+- name: Gets tarball
+  sudo: yes
+  sudo_user: "{{ gogs_user }}"
+  get_url:
+    url: "https://github.com/gogits/gogs/releases/download/v{{ gogs__version }}/linux_amd64.tar.gz"
+    dest: "/home/{{ gogs_user }}/"
+  register: gogs__new_archive
+
+- name: Unarchive source
+  sudo: yes
+  sudo_user: "{{ gogs_user }}"
+  command: 'tar xzf "/home/{{ gogs_user }}/linux_amd64.tar.gz" -C "/home/{{ gogs_user }}/"'
+  when: 'gogs__new_archive|changed'
+
+- name: create config dir
+  file:
+    path: '{{ gogs_home }}/gogs/custom/conf'
+    state: 'directory'
+    owner: '{{ gogs_user }}'
+    group: '{{ gogs_group }}'
+    mode: 0750
+    recurse: yes
+
+- name: copy config file
+  template:
+    src: 'templates/etc/gogs/conf/app.ini'
+    dest: '{{ gogs_home }}/gogs/custom/conf/app.ini'
+
+- name: copy systemd file
+  copy:
+    remote_src: 'yes'
+    src: '/home/{{ gogs_user }}/gogs/scripts/systemd/gogs.service'
+    dest: '/etc/systemd/system/gogs.service'
+  when: 'gogs__new_archive|changed'
+
+
+- name: Enable Services
+  service:
+    name: '{{ item }}'
+    enabled: 'yes'
+    state: 'started'
+  with_items:
+    - gogs
+

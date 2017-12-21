@@ -1,5 +1,14 @@
 ---
 
+pki_group_realms:
+  - name: '{{ ansible_fqdn }}'
+    acme: True
+    acme_subdomains: '{{ pki_realms__fqdn_subdomains|d([]) }}'
+    # acme_ca: 'le-staging'
+
+unattended_upgrades__auto_reboot: True # auto reboots if update require it
+unattended_upgrades__remove_unused: True # auto remove unused packages
+
 ansible_ssh_extra_args: '{{ansible_host_alias}}'
 #ansible_host: '123.123.123.124'
 #ansible_connection: 'lxd'

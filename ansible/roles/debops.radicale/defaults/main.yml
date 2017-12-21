@@ -1,0 +1,106 @@
+---
+
+
+radicale__deploy_state: "present"
+
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: radicale__base_packages [[[
+#
+# List of base packages to install.
+radicale__base_packages:
+  - radicale
+                                                                   # ]]]
+
+# .. envvar:: radicale_domain [[[
+#
+# What domain will be configured for radicale.
+radicale_domain: [ 'calendar.{{ ansible_domain }}' ]
+
+                                                                   # ]]]
+
+# .. envvar:: radicale_port [[[
+#
+# Port where radicale-lite daemon will listen for connections.
+radicale_port: '5232'
+                                                                   # ]]]
+radicale_ldap:
+  password: 'uwai0Cheiquahk3oTheexoh5Peeloon3'
+  password_hash: '{SSHA}ASjPtUok9R+G6dKHcRYG5efN7wi4xo3K'
+  dn: 'cn=radicale,ou=Machines,{{ slapd_basedn }}'
+  base_dn: 'ou=users,dc=radicale,{{ slapd_basedn }}'
+
+
+# PKI [[[
+# ~~~~~~~
+
+# .. envvar:: radicale__pki_realm_path [[[
+#
+# Directory path where PKI realm live.
+prosdoy__pki_realm_path: '{{ ansible_local.pki.path
+                            if (ansible_local|d() and ansible_local.pki|d() and
+                                ansible_local.pki.path|d())
+                            else "/etc/pki/realms" }}'
+                                                                   # ]]]
+# .. envvar:: radicale__pki_realm [[[
+#
+# Default PKI realm to use.
+radicale__pki_realm: '{{ ansible_local.pki.realm
+                       if (ansible_local|d() and ansible_local.pki|d() and
+                           ansible_local.pki.realm|d())
+                       else "domain" }}'
+                                                                   # ]]]
+# Default CRT file name to use.
+radicale__pki_crt_filename: '{{ ansible_local.pki.crt
+                              if (ansible_local|d() and ansible_local.pki|d() and
+                                  ansible_local.pki.crt|d())
+                              else "default.crt" }}'
+                                                                   # ]]]
+# .. envvar:: radicale__pki_key_filename [[[
+#
+# Default private key file name to use.
+radicale__pki_key_filename: '{{ ansible_local.pki.key
+                              if (ansible_local|d() and ansible_local.pki|d() and
+                                  ansible_local.pki.key|d())
+                              else "default.key" }}'
+                                                                   # ]]]
+
+# .. envvar:: radicale__nginx__dependent_servers [[[
+#
+# Server configuration for the debops.nginx_ Ansible role.
+radicale__nginx__dependent_servers:
+  - by_role: 'debops.radicale'
+    enabled: True
+    favicon: False
+    name: '{{ radicale_domain }}'
+    type: 'proxy'
+    proxy_pass: 'http://127.0.0.1:{{ radicale_port }}'
+
+
+radicale__rights_default:
+  - name: 'public'
+    user: '.*'
+    collection: '^public(/.+)?$'
+    permission: 'r'
+  - name: 'public_write'
+    user: '.+'
+    collection: '^public(/.+)?$'
+    permission: 'w'
+  - name: 'owner'
+    user: '.+'
+    collection: '^%(login)s(/.*)?$'
+    permission: 'rw'
+
+
+radicale__rights: []
+radicale__rights_host: []
+radicale__rights_group: []
+
+radicale__rights_combined: '{{ radicale__rights_default }}'
+
+radicale__ldap_url: '{{ secret_ldap_server_uri }}'
+
+radicale__config: []
+

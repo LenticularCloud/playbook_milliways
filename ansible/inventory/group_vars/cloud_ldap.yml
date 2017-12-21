@@ -1,0 +1,3 @@
+---
+
+slapd_pki_realm: 'ldap.{{ ansible }}'

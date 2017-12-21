@@ -1,0 +1,19 @@
+---
+
+
+git_ip:    "{{ (((hostvars['git']   |default({}))['ansible_default_ipv4'])|default({}))['address']|default() }}"
+
+pki_realms:
+  - name: 'git.{{ ansible_domain }}'
+    acme: True
+    acme_default_subdomains: []
+  - name: 'cpad.{{ ansible_domain }}'
+    acme: True
+
+
+nginx__servers:
+  - enable: True
+    name: [ 'git.{{ ansible_domain }}' ]
+    acme: True
+    type: 'proxy'
+    proxy_pass: 'https://git.{{ ansible_domain }}/'

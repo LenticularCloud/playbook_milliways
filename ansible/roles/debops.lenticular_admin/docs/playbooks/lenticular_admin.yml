@@ -1,0 +1,40 @@
+---
+
+
+
+- name: Manage Lenticular Admin
+  hosts: [ 'debops_service_lenticular_admin' ]
+  roles:
+  - role: debops.ferm
+    tags: [ 'role::ferm' ]
+    ferm__dependent_rules:
+        - '{{ gogs__ferm__dependent_rules }}'
+
+  - role: debops.nginx
+    tags: [ 'role::nginx' ]
+    nginx__dependent_servers:
+        - '{{ gogs__nginx__dependent_servers }}'
+
+  - role: debops.php/env
+    tags: [ 'role::php', 'role::apt_preferences', 'role::logrotate' ]
+
+  - role: debops.apt_preferences
+    apt_preferences__dependent_list:
+    - '{{ php__apt_preferences__dependent_list }}'
+
+  - role: debops.logrotate
+    tags: [ 'role::logrotate' ]
+    logrotate__dependent_config:
+    - '{{ php__logrotate__dependent_config }}'
+
+  - role: debops.mariadb
+    tags: [ 'role::mariadb' ]
+
+  - role: debops.php
+    tags: [ 'role::php' ]
+
+  - role: debops.lenticular_admin
+    tags: [ 'role::lenticular_admin' ]
+
+
+

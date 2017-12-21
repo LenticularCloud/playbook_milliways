@@ -1,5 +1,14 @@
 ---
 
-
 ntp__timezone: 'Etc/UTC'
+ansible_user: root
+pki_default_subdomains: []
+apt_proxy__http_url: 'http://aptcache.cyberfred.eu:3142/'
+
+pki_default_realms:
+  - name: 'domain'
+    acme: False
+    default_subdomains: [ '{{ ansible_hostname }}' ]
+
+
 

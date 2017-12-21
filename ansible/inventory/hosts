@@ -15,13 +15,17 @@
 # that functionality and more, then uncomment your hostname below.
 
 [lxc]
-monitor ansible_ssh_extra_args=monitor
-ldap    ansible_ssh_extra_args=ldap
-www     ansible_ssh_extra_args=www
-shell   ansible_ssh_extra_args=shell
-vpn     ansible_ssh_extra_args=vpn
-db      ansible_ssh_extra_args=db
-mail    ansible_ssh_extra_args=mail
+ldap           ansible_ssh_extra_args=ldap
+www            ansible_ssh_extra_args=www
+shell          ansible_ssh_extra_args=shell
+vpn            ansible_ssh_extra_args=vpn
+db             ansible_ssh_extra_args=db
+mail           ansible_ssh_extra_args=mail
+#monitor        ansible_ssh_extra_args=monitor
+jabber         ansible_ssh_extra_args=jabber
+git            ansible_ssh_extra_args=git
+calendar       ansible_ssh_extra_args=calendar
+seafile        ansible_ssh_extra_args=seafile
 
 [debops_all_hosts:children]
 cloud_main
@@ -32,21 +36,26 @@ lxc
 [lxc:vars]
 ansible_connection=lxc_ssh
 #ansible_ssh_common_args='-o ProxyCommand "ssh root@123.123.123.124 nc %h 22"'
-#milliways.info
 
 [all:vars]
-ansible_host=123.123.123.121
+ansible_host=milliways.info
 bootstrap__domain=milliways.info
+ansible_domain=milliways.info
 
 ### role groups
 [cloud_main]
 milliways.info
+
+[cloud_www]
+www
+
 
 [debops_service_ifupdown:children]
 cloud_main
 
 [debops_service_nginx:children]
 cloud_main
+lxc
 
 [debops_service_dnsmasq:children]
 cloud_main
@@ -66,6 +75,9 @@ mail
 [debops_service_mariadb_server]
 db
 
+[debops_service_mariadb]
+git
+
 [debops_prometheus_server]
 monitor
 
@@ -74,3 +86,25 @@ mail
 
 [debops_service_slapd]
 ldap
+
+[debops_service_prosody]
+jabber
+
+[debops_service_radicale]
+calendar
+
+[debops_service_nsswitch]
+shell
+
+[debops_service_ifupdown]
+www
+
+[debops_service_gogs]
+git
+
+[debops_service_seafile]
+seafile
+
+[debops_service_apt_proxy:children]
+debops_all_hosts
+

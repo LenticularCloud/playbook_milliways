@@ -1,0 +1,6 @@
+---
+
+
+
+- name: 'Restart lenticular_admin'
+  service: name=lenticular_admin state=restarted

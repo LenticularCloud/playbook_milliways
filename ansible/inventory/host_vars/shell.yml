@@ -1,0 +1,10 @@
+---
+
+sshd__ports: [ '22', '2222' ] #support for ipv4
+sshd__ferm_ports: [ 'ssh', '2222' ]
+
+
+nsswitch__host_services: [ 'ldap' ]
+sshd__authorized_keys_lookup: True
+
+auth_nsswitch: [ 'compat', 'ldap' ]

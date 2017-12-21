@@ -1,0 +1,32 @@
+---
+
+- name: Manage Prosody
+  hosts: [ 'debops_service_gogs' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.ferm
+      tags: [ 'role::ferm' ]
+      ferm__dependent_rules:
+        - '{{ gogs__ferm__dependent_rules }}'
+
+    - role: debops.mariadb
+      tags: [ 'role::mariadb' ]
+      mariadb__dependent_users:
+        - '{{ gogs__mariadb__dependent_users }}'
+      mariadb__dependent_databases:
+        - '{{ gogs__mariadb__dependent_databases }}'
+
+    - role: debops.nginx
+      tags: [ 'role::nginx' ]
+      nginx__dependent_servers:
+        - '{{ gogs__nginx__dependent_servers }}'
+
+    - role: debops.gogs
+      tags: [ 'role::gogs' ]
+

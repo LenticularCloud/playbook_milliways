@@ -1,0 +1,49 @@
+---
+
+
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ seafile__base_packages }}'
+
+- user:
+    name: '{{ seafile_user }}'
+
+- name: Gets tarball
+  sudo: yes
+  sudo_user: "{{ seafile_user }}"
+  get_url:
+    url: "{{ seafile_source_url }}"
+    dest: "/home/{{ seafile_user }}/seafile.tar.gz"
+  register: seafile__new_archive
+
+- name: Unarchive source
+  sudo: yes
+  sudo_user: "{{ seafile_user }}"
+  command: 'tar xzf "/home/{{ seafile_user }}/seafile.tar.gz" -C "/home/{{ seafile_user }}/"'
+  when: 'seafile__new_archive|changed'
+
+
+
+#- name: copy config
+# template:
+#   src: 'etc/seafile/seafile.cfg.lua.j2'
+#   dest: '/etc/seafile/seafile.cfg.lua'
+# notify: [ 'Restart seafile' ]
+
+
+- name: copy config
+  template:
+    src: 'etc/systemd/system/seafile.service.j2'
+    dest: '/etc/systemd/system/seafile.service'
+  notify: [ 'Restart seafile' ]
+
+- name: Enable Services
+  service:
+    name: '{{ item }}'
+    enabled: 'yes'
+    state: 'started'
+  with_items:
+    - seafile

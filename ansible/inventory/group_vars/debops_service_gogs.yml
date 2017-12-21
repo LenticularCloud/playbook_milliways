@@ -1,0 +1,8 @@
+---
+
+mariadb__dependent_users:
+  - user: 'gogs'
+
+mariadb__dependent_databases:
+  - name: 'gogs'
+

@@ -1,25 +1,94 @@
 ---
 
+
+dnsmasq__domain: '{{ bootstrap__domain }}'
+dnsmasq__dns_not_forward_managed: '' #allow forwarddomain
+
+sshd__ports: [ '22', '222' ] #support for ipv4
+sshd__ferm_ports: [ 'ssh', '222' ]
+
 lxc_interface_external: br2
 
-ifupdown__host_interfaces:
-  'br2':
-    inet: 'static'
-    inet6: 'static'
-    addresses: [ '192.168.201.1/24'] #, '2001:db8:feed:beef::1/64' ]
-    nat: True
-    state: 'present'
+lxc_default_template: 'download'
 
 
-nginx__servers:
-  - enabled: True
-    name: [ 'monitor.milliways.info' ]
-    acme: False #@TODO
-    type: 'proxy'
-    proxy_pass: 'http://monitor:3000'
-  - enabled: True
-    name: [ 'account.milliways.info' ]
-    acme: False #@TODO
-    type: 'proxy'
-    proxy_pass: 'https://cloudldapadmin.www.milliways.info'
+lxc_default_configure:
+  lxc:
+    start:
+      auto: 1
+    id_map:
+      - 'u 0 1000000 65536'
+      - 'g 0 1000000 65536'
+    network:
+    - type: ' veth'
+      link: 'br2'
 
+
+
+lxc_containers:
+  - name: 'www'
+    template_options: '-d debian -r stretch -a amd64'
+  - name: 'ldap'
+    template_options: '-d debian -r stretch -a amd64'
+  - name: 'shell'
+    template_options: '-d debian -r stretch -a amd64'
+  - name: 'vpn'
+    template_options: '-d debian -r stretch -a amd64'
+  - name: 'db'
+    template_options: '-d debian -r stretch -a amd64'
+  - name: 'mail'
+    template_options: '-d debian -r stretch -a amd64'
+  - name: 'jabber'
+    template_options: '-d debian -r stretch -a amd64'
+  - name: 'git'
+    template_options: '-d debian -r stretch -a amd64'
+  - name: 'calendar'
+    template_options: '-d debian -r stretch -a amd64'
+  - name: 'seafile'
+    template_options: '-d debian -r stretch -a amd64'
+
+
+public_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+jabber_ip: "{{ (((hostvars['jabber']|default({}))['ansible_default_ipv4'])|default({}))['address']|default() }}"
+www_ip:    "{{ (((hostvars['www']   |default({}))['ansible_default_ipv4'])|default({}))['address']|default() }}"
+git_ip:    "{{ (((hostvars['git']   |default({}))['ansible_default_ipv4'])|default({}))['address']|default() }}"
+shell_ip:    "{{ (((hostvars['shell']   |default({}))['ansible_default_ipv4'])|default({}))['address']|default() }}"
+
+
+ferm__group_rules:
+  - type: 'dmz'
+    name: 'forward_jabber'
+    rule_state: "{{ 'present' if jabber_ip else 'ignore' }}"
+    multiport: True
+    public_ip: "{{ public_ip }}"
+    private_ip: "{{ jabber_ip }}"
+    ports:
+      - 5222
+      - 5269
+#      - 5280 #http
+      - 5281 #https
+  - type: 'dmz'
+    rule_state: "{{ 'present' if www_ip else 'ignore' }}"
+    name: 'forward_www'
+    multiport: True
+    public_ip: "{{ public_ip }}"
+    private_ip: "{{ www_ip }}"
+    ports:
+      - 80
+      - 443
+  - type: 'dmz'
+    rule_state: "{{ 'present' if git_ip else 'ignore' }}"
+    name: 'forward_git'
+    multiport: True
+    public_ip: "{{ public_ip }}"
+    private_ip: "{{ git_ip }}"
+    ports:
+      - 22
+  - type: 'dmz'
+    rule_state: "{{ 'present' if shell_ip else 'ignore' }}"
+    name: 'forward_shell'
+    multiport: True
+    public_ip: "{{ public_ip }}"
+    private_ip: "{{ shell_ip }}"
+    ports:
+      - 2222

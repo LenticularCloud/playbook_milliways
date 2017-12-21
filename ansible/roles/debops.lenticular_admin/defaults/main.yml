@@ -1,0 +1,137 @@
+---
+
+
+lenticular_admin__deploy_state: "present"
+
+lenticular_admin_system_name: 'lenticularadmin'
+lenticular_admin__user: 'www-cloudadmin'
+
+lenticular_admin__dir: '/srv/www/sites/cloudldapadmin'
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: apache__base_packages [[[
+#
+# List of base packages to install.
+lenticular_admin__base_packages:
+  - 'yui-compressor'
+
+lenticular_admin__pki_realms:
+  - name: 'account.{{ ansible__domain }}'
+
+lenticular_admin__php__pools:
+  - name: '{{ lenticular_admin__user }}'
+    owner: '{{ lenticular_admin__user }}'
+    home: '{{ cloudldapadmin_dir }}'
+
+lenticular_admin__nginx__dependent_servers:
+  enable: '{{ True if lenticular_admin__deploy_state == "present" else False }}'
+  # Default domain on which this DokuWiki instance will be accessible
+  name: [ 'admin.{{ ansible_domain }}' ]
+  pki_realm: 'admin.{{ ansible_domain }}'
+  # List of domains which will redirect HTTP requests to main domain
+  redirect_from: [ ]
+  # User and group which manage this Lenticular Admin instance (compatible with
+  # debops.gitusers role configuration)
+  owner: '{{ lenticular_admin__user }}'
+  group: '{{ lenticular_admin__user }}'
+
+  type: 'php'
+  php_upstream: 'php_{{ lenticular_admin__user }}'
+  root: '{{ cloudldapadmin_dir }}/web'
+
+  # List of index files to look for by default
+  index: 'index.html index.htm index.php app.php'
+  # Definitions of location { } blocks in text block format; there's also
+  # 'location_list' with more strict key-value format available)
+  location:
+    '/': |
+      try_files $uri $uri/ @cloudldapadmin;
+
+    '@cloudldapadmin': |
+      rewrite ^/(.*)  /app.php  last;
+
+
+# Upstream for default php-fpm configuration
+lenticular_admin__nginx_upstream_php:
+  enabled: True
+  name: 'php_{{ lenticular_admin__user }}'
+  type: 'php5'
+  php5: '{{ lenticular_admin__user }}'
+
+
+php__host_packages: [ 'intl', 'xml', 'zip', 'ldap', 'mysql', 'mbstring' ]
+
+# Database and network [[[
+# ------------------------
+
+# .. envvar:: lenticular_admin_database_server [[[
+#
+# FQDN of the MariaDB database host. It will be configured by
+# the debops.mariadb_ role.
+lenticular_admin_database_server: '{{ ansible_local.mariadb.server
+                              if (ansible_local|d() and ansible_local.mariadb|d() and
+                                  ansible_local.mariadb.server|d())
+                              else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: lenticular_admin_database_user [[[
+#
+# MariaDB database user to use for lenticular_admin.
+lenticular_admin_database_user: '{{ lenticular_admin_system_name }}'
+
+                                                                   # ]]]
+# .. envvar:: lenticular_admin_database_name [[[
+#
+# Name of the MariaDB database to use for lenticular_admin.
+lenticular_admin_database_name: '{{ lenticular_admin_system_name }}'
+
+                                                                   # ]]]
+# .. envvar:: lenticular_admin_database_password [[[
+#
+# MariaDB database password for the lenticular_admin database user.
+lenticular_admin_database_password: "{{ lookup('password', secret + '/mariadb/'
+                                + (ansible_local.mariadb.delegate_to + '/'
+                                   if ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.delegate_to|d()
+                                   else '')
+                                + (ansible_local.mariadb.port + '/'
+                                   if ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.port|d()
+                                   else '')
+                                + '/credentials/' + lenticular_admin_database_user + '/password length=48') }}"
+
+                                                                   # ]]]
+
+# .. envvar:: lenticular_admin__mariadb__dependent_users [[[
+#
+# User configuration for the debops.mariadb_ Ansible role.
+lenticular_admin__mariadb__dependent_users:
+
+  - name: '{{ lenticular_admin_database_user }}'
+    password: '{{ lenticular_admin_database_password }}'
+    owner: '{{ lenticular_admin_user }}'
+    group: '{{ lenticular_admin_group }}'
+    home: '{{ lenticular_admin_home }}'
+
+                                                                   # ]]]
+# .. envvar:: lenticular_admin__mariadb__dependent_databases [[[
+#
+# Database configuration for the debops.mariadb_ Ansible role.
+lenticular_admin__mariadb__dependent_databases:
+
+  - database: '{{ lenticular_admin_database_name }}'
+
+                                                                   # ]]]
+
+
+
+lenticular_admin__mariadb__dependent_users:
+  - user: cloudadmin
+    name: cloudadmin
+    state: present
+
+lenticular_admin__mariadb__dependent_databases:
+  - name: 'cloudadmin'
+
+
+

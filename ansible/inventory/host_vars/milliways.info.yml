@@ -1,0 +1,25 @@
+---
+
+
+
+ifupdown__host_interfaces:
+  'br0':
+    inet: 'static'
+    inet6: 'static'
+    addresses:
+      - '83.68.131.5/29'
+      - '2a01:190:1501:4242::1/128'
+    gateways: [ '83.68.131.1', 'fe80::be30:5bff:fee8:1125' ]
+    dns_nameservers:
+      - '8.8.8.8'
+      - '2001:4860:4860::8888'
+    bridge_stp: 'on'
+  'br2':
+    inet: 'static'
+    inet6: 'static'
+    type: 'bridge'
+    addresses: [ '192.168.201.1/24', '2a01:190:1501:4242::1/64' ]
+    nat: True
+    state: 'present'
+    dns_search: '{{ ansible_host }}'
+

@@ -1,0 +1,28 @@
+---
+
+- name: Manage Prosody
+  hosts: [ 'debops_service_seafile' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: debops.nginx
+      tags: [ 'role::nginx' ]
+      nginx__dependent_servers:
+        - '{{ seafile__nginx__dependent_servers }}'
+
+    - role: debops.mariadb
+      tags: [ 'role::mariadb' ]
+      mariadb__dependent_users:
+        - '{{ seafile__mariadb__dependent_users }}'
+      mariadb__dependent_databases:
+        - '{{ seafile__mariadb__dependent_databases }}'
+      when: seafile__database == 'mysql'
+
+    - role: debops.seafile
+      tags: [ 'role::seafile' ]
+

@@ -1,0 +1,183 @@
+---
+
+
+gogs__deploy_state: "present"
+
+gogs_system_name: 'git'
+gogs__version: '0.11.29'
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: apache__base_packages [[[
+#
+# List of base packages to install.
+gogs__base_packages:
+  - git
+
+gogs__ferm__dependent_rules:
+  - type: 'accept'
+    dport: [ '22', '443' ]
+    accept_any: True
+    weight: '40'
+    by_role: 'debops.gogs'
+    name: 'gogs'
+    multiport: True
+    delete: '{{ gogs__deploy_state != "present" }}'
+
+# .. envvar:: gogs_user [[[
+#
+# Name of the system user account for gogs.
+gogs_user: '{{ gogs_system_name }}'
+
+                                                                   # ]]]
+# .. envvar:: gogs_group [[[
+#
+# Name of the system group account for gogs.
+gogs_group: '{{ gogs_system_name }}'
+
+                                                                   # ]]]
+# .. envvar:: gogs_home [[[
+#
+# Home directory of gogs.
+gogs_home: '/home/{{ gogs_user }}'
+
+                                                                   # ]]]
+# .. envvar:: gogs_log_dir [[[
+#
+# Path where gogs logs are stored.
+gogs_log_dir: '{{ (ansible_local.root.log
+                       if (ansible_local|d() and ansible_local.root|d() and
+                           ansible_local.root.log|d())
+                       else "/var/log") + "/" + gogs_system_name }}'
+                                                                   # ]]]
+# Basic configuration [[[
+# -----------------------
+
+# .. envvar:: gogs_version [[[
+#
+# gogs git version to install.
+gogs_version: 'develop'
+
+                                                                   # ]]]
+
+
+# Database and network [[[
+# ------------------------
+
+# .. envvar:: gogs_database_server [[[
+#
+# FQDN of the MariaDB database host. It will be configured by
+# the debops.mariadb_ role.
+gogs_database_server: '{{ ansible_local.mariadb.server
+                              if (ansible_local|d() and ansible_local.mariadb|d() and
+                                  ansible_local.mariadb.server|d())
+                              else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: gogs_database_user [[[
+#
+# MariaDB database user to use for gogs.
+gogs_database_user: '{{ gogs_system_name }}'
+
+                                                                   # ]]]
+# .. envvar:: gogs_database_name [[[
+#
+# Name of the MariaDB database to use for gogs.
+gogs_database_name: '{{ gogs_system_name }}'
+
+                                                                   # ]]]
+# .. envvar:: gogs_database_password [[[
+#
+# MariaDB database password for the gogs database user.
+gogs_database_password: "{{ lookup('password', secret + '/mariadb/'
+                                + (ansible_local.mariadb.delegate_to + '/'
+                                   if ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.delegate_to|d()
+                                   else '')
+                                + (ansible_local.mariadb.port + '/'
+                                   if ansible_local|d() and ansible_local.mariadb|d() and ansible_local.mariadb.port|d()
+                                   else '')
+                                + '/credentials/' + gogs_database_user + '/password length=48') }}"
+
+                                                                   # ]]]
+
+# .. envvar:: gogs__mariadb__dependent_users [[[
+#
+# User configuration for the debops.mariadb_ Ansible role.
+gogs__mariadb__dependent_users:
+
+  - name: '{{ gogs_database_user }}'
+    password: '{{ gogs_database_password }}'
+    owner: '{{ gogs_user }}'
+    group: '{{ gogs_group }}'
+    home: '{{ gogs_home }}'
+
+                                                                   # ]]]
+# .. envvar:: gogs__mariadb__dependent_databases [[[
+#
+# Database configuration for the debops.mariadb_ Ansible role.
+gogs__mariadb__dependent_databases:
+
+  - database: '{{ gogs_database_name }}'
+
+                                                                   # ]]]
+# .. envvar:: gogs_secret [[[
+#
+# App Secret debops.mariadb_ Ansible role.
+gogs_secret:  "{{ lookup('password', secret + '/gogs/'
+                                + ansible_host
+                                + '/credentials/' + gogs_database_user + '/password length=48') }}"
+                                                                   # ]]]
+
+gogs__nginx__dependent_servers:
+  - name: [ 'git.{{ ansible_domain }}' ]
+    type: 'proxy'
+    proxy_pass: 'http://localhost:3000'
+
+
+gogs_config:
+  '':
+    APP_NAME: 'Gogs: Go Git Service'
+    RUN_USER: 'git'
+    RUN_MODE: 'prod'
+  database:
+    DB_TYPE: 'mysql'
+    HOST: '{{ gogs_database_server }}:3306'
+    NAME: '{{ gogs_database_name }}'
+    USER: '{{ gogs_database_user }}'
+    PASSWD: '{{ gogs_database_password }}'
+  repository:
+    ROOT: '{{ gogs_home }}/gogs-repositories'
+  server:
+    DOMAIN: '{{ ansible_fqdn }}'
+    HTTP_PORT: '3000'
+    ROOT_URL: 'https://{{ ansible_fqdn }}/'
+    DISABLE_SSH: 'false'
+    OFFLINE_MODE: 'true'
+  mailer:
+    ENABLED: 'false' #@TODO
+  service:
+    REGISTER_EMAIL_CONFIRM:  'false'
+    ENABLE_NOTIFY_MAIL:      'false'
+    DISABLE_REGISTRATION:    'true'
+    ENABLE_CAPTCHA:          'false'
+    REQUIRE_SIGNIN_VIEW:     'false'
+  picture:
+    DISABLE_GRAVATAR:         'true'
+    ENABLE_FEDERATED_AVATAR:  'false'
+  session:
+    PROVIDER: 'file'
+  log:
+    MODE:      'console, file'
+    LEVEL:      'Info'
+    ROOT_PATH:  '/home/git/gogs/log'
+  security:
+    INSTALL_LOCK:  'true'
+    SECRET_KEY:    '{{ gogs_secret }}'
+
+
+
+
+
+
+

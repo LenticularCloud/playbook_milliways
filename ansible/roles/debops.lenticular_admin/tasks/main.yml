@@ -1,0 +1,23 @@
+---
+- name: install composer
+  get_url: url=https://getcomposer.org/composer.phar remote_src=true
+    dest=/usr/local/bin/composer
+    mode=755
+  tags: [ 'task::cloudadmin' ]
+- name: mkdir
+  file:
+    path: '{{ item }}'
+    state: directory
+    mode: 0755
+    owner: '{{ cloudadmin_user }}'
+    group: '{{ cloudadmin_user }}'
+    recurse: no
+  with_items:
+    - /srv/www/sites/cloudldapadmin/
+    - /var/www
+  tags: [ 'task::cloudadmin' ]
+- name: setup cloudadmin
+  include: setup.yml
+  #become: true
+  #become_user: '{{ cloudadmin_user }}'
+  tags: [ 'task::cloudadmin' ]

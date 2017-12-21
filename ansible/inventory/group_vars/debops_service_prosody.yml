@@ -1,0 +1,12 @@
+---
+
+pki_realms__fqdn_subdomains:
+  - 'conference'
+  - 'upload'
+
+
+prosody__config_virtual_hosts:
+    - name: 'jabber.{{ bootstrap__domain }}'
+      enabled: true
+      pki_realm: 'jabber.{{ bootstrap__domain }}'
+

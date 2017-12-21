@@ -1,0 +1,6 @@
+---
+
+mysql_phpmyadmin: true
+
+mariadb_server__bind_address: '::'
+mariadb_server__allow: '2a01:190:1501:2323::/64'

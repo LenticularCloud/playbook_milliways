@@ -1,0 +1,9 @@
+---
+
+#nginx__server:
+#  - enable: True
+#    name: [ 'upload.jabber.{{ ansible_domain }}' ]
+#    acme: True
+#    type: 'proxy'
+#    proxy_pass: 'https://upload.jabber.{{ ansible_domain }}'
+
