@@ -1,12 +1,30 @@
 ---
 
+prosody__authentication: 'ldap2'
+prosody__admins:
+  - 'root@{{ prosody__domain }}'
+prosody__domain: 'jabber.{{ bootstrap__domain }}'
+
 pki_realms__fqdn_subdomains:
   - 'conference'
   - 'upload'
 
+prosody__pki_realm: '{{ prosody__domain }}'
+
+prosody__config_ldap:
+  ldap:
+    hostname: 'ldap.{{ ansible_domain }}'
+    user:
+      basedn: 'ou=users,dc=jabber,dc=o-g,dc=at'
+      usernamefield: 'uid'
+    bind_dn: 'uid=root,ou=users,dc=jabber,dc=o-g,dc=at'
+    bind_password: 'od9aege9caib5aew3YeChahcheishe7u'
+    use_tls: True
 
 prosody__config_virtual_hosts:
-    - name: 'jabber.{{ bootstrap__domain }}'
+    - name: '{{ prosody__domain }}'
       enabled: true
-      pki_realm: 'jabber.{{ bootstrap__domain }}'
+      pki_realm: '{{ prosody__domain }}'
 
+prosody__group_config_global:
+  - http_upload_file_size_limit: 1024*1024*10 # 10MB

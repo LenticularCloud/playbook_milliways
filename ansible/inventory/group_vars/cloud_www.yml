@@ -9,6 +9,13 @@ pki_realms:
     acme_default_subdomains: []
   - name: 'cpad.{{ ansible_domain }}'
     acme: True
+    acme_default_subdomains: []
+  - name: 'calendar.{{ ansible_domain }}'
+    acme_default_subdomains: []
+  - name: 'account.{{ ansible_domain }}'
+    acme_default_subdomains: []
+    acme: True
+    acme_default_subdomains: []
 
 
 nginx__servers:
@@ -16,4 +23,9 @@ nginx__servers:
     name: [ 'git.{{ ansible_domain }}' ]
     acme: True
     type: 'proxy'
-    proxy_pass: 'https://git.{{ ansible_domain }}/'
+    proxy_pass: 'https://git.o-g.at/'
+  - enable: True
+    name: [ 'calendar.{{ ansible_domain }}' ]
+    acme: True
+    type: 'proxy'
+    proxy_pass: 'https://calendar.o-g.at/'

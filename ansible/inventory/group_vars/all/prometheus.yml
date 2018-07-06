@@ -1,0 +1,49 @@
+---
+
+
+prometheus_exporters__allow:
+  - 'monitor.o-g.at'
+
+prometheus_server__default_jobs:
+  - name: 'prometheus'
+    state: 'present'
+    content:
+      job_name: 'prometheus'
+      static_configs:
+        - targets: ['localhost:9090']
+          labels:
+            env: 'prod'
+
+prometheus_server__host_jobs:
+  - name: 'node_host'
+    content:
+      job_name: 'node_host'
+      static_configs:
+        - targets:
+          - 'o-g.at:9100'
+          labels:
+            env: prod
+  - name: 'postfix'
+    content:
+      job_name: 'postfix'
+      static_configs:
+        - targets:
+          -  'mail.o-g.at:9154'
+          labels:
+            env: prod
+  - name: 'mariadb'
+    content:
+      job_name: 'mariadb'
+      static_configs:
+        - targets:
+          -  'db.o-g.at:9104'
+          labels:
+            env: prod
+  - name: 'nginx'
+    content:
+      job_name: 'nginx'
+      static_configs:
+        - targets:
+          -  'www.o-g.at:80'
+          labels:
+            env: prod
