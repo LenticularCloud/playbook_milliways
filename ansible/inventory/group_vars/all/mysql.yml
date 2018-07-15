@@ -1,4 +1,3 @@
 ---
 
 mariadb__server: 'db.{{ ansible_domain }}'
-mariadb__delegate_to: 'db.{{ ansible_domain }}'

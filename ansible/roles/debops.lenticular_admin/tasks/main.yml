@@ -6,18 +6,15 @@
   tags: [ 'task::cloudadmin' ]
 - name: mkdir
   file:
-    path: '{{ item }}'
+    path: '{{ lenticular_admin__dir }}'
     state: directory
-    mode: 0755
-    owner: '{{ cloudadmin_user }}'
-    group: '{{ cloudadmin_user }}'
+    mode: 0750
+    owner: '{{ lenticular_admin__user }}'
+    group: '{{ lenticular_admin__user }}'
     recurse: no
-  with_items:
-    - /srv/www/sites/cloudldapadmin/
-    - /var/www
   tags: [ 'task::cloudadmin' ]
 - name: setup cloudadmin
   include: setup.yml
-  #become: true
-  #become_user: '{{ cloudadmin_user }}'
+#  become: true
+#  become_user: '{{ lenticular_admin__user }}'
   tags: [ 'task::cloudadmin' ]

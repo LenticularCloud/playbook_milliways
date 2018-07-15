@@ -15,9 +15,9 @@ prosody__config_ldap:
   ldap:
     hostname: 'ldap.{{ ansible_domain }}'
     user:
-      basedn: 'ou=users,dc=jabber,dc=o-g,dc=at'
+      basedn: 'ou=users,dc=jabber,{{ slapd_basedn }}'
       usernamefield: 'uid'
-    bind_dn: 'uid=root,ou=users,dc=jabber,dc=o-g,dc=at'
+    bind_dn: 'uid=root,ou=users,dc=jabber,{{ slapd_basedn }}'
     bind_password: 'od9aege9caib5aew3YeChahcheishe7u'
     use_tls: True
 
@@ -27,4 +27,4 @@ prosody__config_virtual_hosts:
       pki_realm: '{{ prosody__domain }}'
 
 prosody__group_config_global:
-  - http_upload_file_size_limit: 1024*1024*10 # 10MB
+  http_upload_file_size_limit: '{{ 1024*1024*10 }}' # 10MB

@@ -21,7 +21,7 @@ shell          ansible_ssh_extra_args=shell
 vpn            ansible_ssh_extra_args=vpn
 db             ansible_ssh_extra_args=db
 mail           ansible_ssh_extra_args=mail
-#monitor        ansible_ssh_extra_args=monitor
+monitor        ansible_ssh_extra_args=monitor
 jabber         ansible_ssh_extra_args=jabber
 git            ansible_ssh_extra_args=git
 calendar       ansible_ssh_extra_args=calendar
@@ -66,7 +66,7 @@ cloud_main
 [debops_prometheus:children]
 cloud_main
 
-[debops_cloudldapadmin]
+[debops_service_lenticular_admin]
 www
 
 [debops_service_dovecot]
@@ -78,8 +78,11 @@ db
 [debops_service_mariadb]
 git
 
-[debops_prometheus_server]
+[debops_service_prometheus_server]
 monitor
+
+[debops_service_prometheus_exporters:children]
+cloud_main
 
 [debops_service_postfix]
 mail
@@ -107,4 +110,8 @@ seafile
 
 [debops_service_apt_proxy:children]
 debops_all_hosts
+
+
+#[debops_service_borg_client:children]
+#cloud_main
 

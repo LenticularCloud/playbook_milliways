@@ -1,11 +1,11 @@
 parameters:
     ldap_host: {{ slapd_host }}
     ldap_port: 389
-    ldap_bind_rdn: ''
-    ldap_bind_pw: ''
+    ldap_bind_rdn: '{{ lenticular_admin__ldap_bind_dn }}'
+    ldap_bind_pw: '{{ lenticular_admin__ldap_bind_pw }}'
     ldap_base_dn: '{{ slapd_basedn }}'
     ldap_ssl: true
-    domain: example.org
+    domain: '{{ ansible_domain }}'
     mailer_transport: smtp
     mailer_host: 127.0.0.1
     mailer_user: null
@@ -15,8 +15,8 @@ parameters:
     trusted_proxies: null
     database_driver: 'pdo_mysql'
     database_path: null
-    database_host: 'mysql'
+    database_host: '{{ lenticular_admin__database_server }}'
     database_port: null
-    database_name: "cloudadmin"
-    database_user: "cloudadmin"
-    database_password: "{{ lookup( 'file', secret + '/mariadb/db/credentials/cloudadmin/password' ) }}"
+    database_name: "{{ lenticular_admin__database_user }}"
+    database_user: "{{ lenticular_admin__database_name }}"
+    database_password: "{{ lenticular_admin__database_password }}" 

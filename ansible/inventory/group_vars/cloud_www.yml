@@ -13,7 +13,6 @@ pki_realms:
   - name: 'calendar.{{ ansible_domain }}'
     acme_default_subdomains: []
   - name: 'account.{{ ansible_domain }}'
-    acme_default_subdomains: []
     acme: True
     acme_default_subdomains: []
 
