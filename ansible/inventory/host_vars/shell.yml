@@ -8,3 +8,5 @@ nsswitch__host_services: [ 'ldap' ]
 sshd__authorized_keys_lookup: True
 
 auth_nsswitch: [ 'compat', 'ldap' ]
+
+sshd__default_allow_groups: []

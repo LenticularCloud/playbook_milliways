@@ -79,6 +79,11 @@ slapd_ldap_access_control_list_default:
     by {{ slapd_acl_tls_ssf }} users read
 
   - |
+    to dn.subtree="dc=seafile,{{ slapd_basedn }}"
+    by {{ slapd_acl_tls_ssf }} self write
+    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
+    by {{ slapd_acl_tls_ssf }} dn="cn=seafile,{{ slapd_basedn }}" write
+  - |
     to dn.subtree="dc=posix,{{ slapd_basedn }}"
     by {{ slapd_acl_tls_ssf }} self write
     by {{ slapd_acl_tls_ssf }} dn="uid=root,ou=users,dc=posix,{{ slapd_basedn }}" write
@@ -87,8 +92,7 @@ slapd_ldap_access_control_list_default:
   - |
     to dn.subtree="dc=radicale,{{ slapd_basedn }}"
     by {{ slapd_acl_tls_ssf }} self write
-    by {{ slapd_acl_tls_ssf }} dn="uid=root,ou=users,dc=radicale,{{ slapd_basedn }}" read
-    by {{ slapd_acl_tls_ssf }} dn="uid=radicale,ou=machines,{{ slapd_basedn }}" read
+    by {{ slapd_acl_tls_ssf }} dn="cn=radicale,{{ slapd_basedn }}" read
     by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
   - |
     to dn.subtree="dc=mail,{{ slapd_basedn }}"
