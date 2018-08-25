@@ -1,8 +1,0 @@
-# {{ ansible_managed }}
-
-{% for item in radicale__rights_combined %}
-[{{ item.name }}]
-user: {{ item.user }}
-collection: {{ item.collection }}
-permission: {{ item.permission }}
-{% endfor %}

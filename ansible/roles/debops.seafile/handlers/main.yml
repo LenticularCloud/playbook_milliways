@@ -1,6 +1,0 @@
----
-
-
-
-- name: 'Restart seafile'
-  service: name=seafile state=restarted
