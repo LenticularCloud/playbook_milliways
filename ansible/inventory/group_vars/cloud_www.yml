@@ -1,6 +1,7 @@
 ---
 
 
+
 git_ip:    "{{ (((hostvars['git']   |default({}))['ansible_default_ipv4'])|default({}))['address']|default() }}"
 
 pki_realms:

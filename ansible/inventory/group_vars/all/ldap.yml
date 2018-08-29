@@ -97,7 +97,7 @@ slapd_ldap_access_control_list_default:
   - |
     to dn.subtree="dc=mail,{{ slapd_basedn }}"
     by {{ slapd_acl_tls_ssf }} self write
-    by {{ slapd_acl_tls_ssf }} dn="uid=mail,ou=machines,{{ slapd_basedn }}" read
+    by {{ slapd_acl_tls_ssf }} dn="cn=mail,{{ slapd_basedn }}" read
     by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
   - |
     to dn.subtree="dc=jabber,{{ slapd_basedn }}"

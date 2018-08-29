@@ -1,0 +1,165 @@
+---
+
+pki_acme: True
+default_subdomains: []
+
+#TODO
+packages:
+  - 'dovecot-ldap'
+  - 'postfix-ldap'
+
+pki_realms:
+  - name: 'mail.{{ ansible_domain }}'
+    acme: True
+    acme_default_subdomains: []
+
+opendkim__host_keys:
+  - name: 'mail'
+    domain: '{{ ansible_domain }}'
+
+opendkim__host_signing_table:
+  - name: 'mail'
+    domain: '{{ ansible_domain }}'
+    from: '{{ ansible_domain }}'
+
+postfix__pki_realm: 'mail.{{ ansible_domain }}'
+
+postfix:
+  - 'network'
+  - 'mx'
+  - 'submission'
+  - 'client'
+
+postscreen__access: []
+
+postconf__capabilities:
+  - 'auth'
+  - 'authcleanup'
+  - 'spf'
+
+    #  - 'public-mx-required'
+
+mail_ldap_bind_dn: 'cn=mail,{{ slapd_basedn }}'
+mail_ldap_bind_pw: "{{ lookup('password', secret + '/ldap/'
+                                + ansible_domain + '/credentials/' + slapd_host
+                                + '/' + mail_ldap_bind_dn +  ' length=48') }}"
+dovecot_ldap_bind_dnpass: '{{ mail_ldap_bind_pw }}'
+dovecot_ldap_bind_dn: '{{ mail_ldap_bind_dn }}'
+dovecot_ldap_base: 'ou=users,dc=mail,{{ slapd_basedn }}'
+
+postfix__lookup_tables:
+  - name: 'auth_header_checks.pcre'
+    by_role: 'debops.postconf'
+    comment: |
+      Cleanup headers in mail messages sent by authenticated clients through
+      submission/smtps service.
+
+      Documentation: https://askubuntu.com/questions/78163/
+    default_action: 'IGNORE'
+    options:
+      - '/^X-Mailer:/':   'IGNORE'
+      - '/^User-Agent:/': 'IGNORE'
+      - '/^Received:.*with ESMTPSA/': 'IGNORE'
+
+  - name: 'ldap_virtual_users_maps.cf'
+    mode: '0640'
+    group: 'postfix'
+    config:
+      server_host: 'ldaps://{{ slapd_host }}:636' 
+      search_base:     'ou=users,dc=mail,{{ slapd_basedn }}'
+      version: '3'
+      query_filter: '(&(objectclass=shadowAccount)(mail=%s))'
+      result_attribute: 'uid'
+      result_format: '%s/'
+      bind: 'yes'
+      bind_dn: '{{ mail_ldap_bind_dn }}'
+      bind_pw:  '{{ mail_ldap_bind_pw }}'
+  - name: 'ldap_virtual_alias_maps.cf'
+    mode: '0640'
+    group: 'postfix'
+    config:
+      server_host: 'ldaps://{{ slapd_host }}:636' 
+      search_base:     'ou=users,dc=mail,{{ slapd_basedn }}'
+      version: '3'
+      query_filter: '(&(objectclass=shadowAccount)(mail=%s))'
+      result_attribute: 'uid'
+      result_format: '%s/'
+      bind: 'yes'
+      bind_dn: '{{ mail_ldap_bind_dn }}'
+      bind_pw:  '{{ mail_ldap_bind_pw }}'
+
+
+postfix__maincf:
+  - smtpd_sasl_type: 'dovecot'
+  - smtpd_sasl_path: 'private/auth'
+  - virtual_mailbox_base: '/var/vmail'
+  - virtual_mailbox_domains: '{{ ansible_domain }}'
+  - virtual_alias_maps:
+    - 'hash:/etc/aliases'
+    - 'ldap:/etc/postfix/ldap_virtual_alias_maps.cf'
+  - virtual_mailbox_maps:
+    - 'ldap:/etc/postfix/ldap_virtual_users_maps.cf'
+  - virtual_create_maildirsize: 'yes'
+  - virtual_mailbox_extended: 'yes'
+#  - virtual_mailbox_limit_maps: 'proxy:mysql:${config_directory}/mysql_virtual_mailbox_limit_maps.cf'
+#  - virtual_mailbox_limit_override: 'yes'
+#  - virtual_maildir_limit_message: "Sorry, the user's maildir has overdrawn his diskspace quota, please try again later."
+#  - virtual_overquota_bounce: 'yes'
+  - virtual_uid_maps: 'static:5000'
+  - virtual_gid_maps: 'static:5000'
+  - param: 'defer_transports'
+    value: 'smtp'
+    capability: 'mx'
+
+dovecot_protocols:
+  - 'imap'
+  - 'managesieve'
+
+
+dovecot_user_accounts:
+  - 'deny'
+  - 'ldap'
+
+dovecot_deny_users: []
+
+dovecot_mail_location: 'maildir:/var/vmail/%d/%u'
+
+dovecot_ssl_protocols: '!SSLv3'
+dovecot_pki_realm: 'mail.{{ ansible_domain }}'
+
+dovecot_auth_config_map:
+  service:
+    unix_listener:
+      '/var/spool/postfix/private/auth':
+        mode: '0660'
+        user: 'postfix'
+        group: 'postfix'
+
+dovecot_auth_listeners:
+  - '/var/spool/postfix/private/auth'
+
+
+prometheus_exporters__exporters:
+  - 'node'
+  - 'postfix'
+
+
+dnsmasq__domain: '{{ ansible_domain }}'
+dnsmasq__dns_not_forward_managed: '' #allow forwarddomain
+
+lxc_interface_external: br2
+
+ifupdown__host_interfaces:
+  'br0':
+    inet: 'dhcp'
+    inet6: 'static'
+    addresses:
+      - '2a01:190:1501:1a11::1/128'
+    gateways:
+      - 'fe80::fc54:ff:fe15:4dd4'
+  'br2':
+    inet: 'static'
+    inet6: 'static'
+    addresses: [ '192.168.201.1/24', '2a01:190:1501:1a11::1/64']
+    nat: True
+    state: 'present'

@@ -72,6 +72,24 @@ www
 [debops_service_dovecot]
 mail
 
+[debops_service_opendkim]
+mail
+
+[debops_service_opendmarc]
+mail
+
+[debops_service_postfix]
+mail
+
+[debops_service_postconf]
+mail
+
+[debops_service_postscreen]
+mail
+
+[debops_service_postwhite]
+mail
+
 [debops_service_mariadb_server]
 db
 
@@ -83,9 +101,6 @@ monitor
 
 [debops_service_prometheus_exporters:children]
 cloud_main
-
-[debops_service_postfix]
-mail
 
 [debops_service_slapd]
 ldap
