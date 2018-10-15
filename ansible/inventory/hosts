@@ -69,6 +69,9 @@ cloud_main
 [debops_service_lenticular_admin]
 www
 
+[debops_service_roundcube]
+www
+
 [debops_service_dovecot]
 mail
 

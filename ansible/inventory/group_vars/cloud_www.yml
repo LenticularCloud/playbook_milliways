@@ -3,6 +3,13 @@
 
 git_ip:    "{{ (((hostvars['git']   |default({}))['ansible_default_ipv4'])|default({}))['address']|default() }}"
 
+roundcube__database: 'mysql-default'
+roundcube__default_host: 'mail.{{ ansible_domain }}'
+roundcube__smtp_port: '587'
+roundcube__smtp_user: '%u'
+roundcube__smtp_pass: '%p'
+
+
 pki_realms:
   - name: 'git.{{ ansible_domain }}'
     acme: True
