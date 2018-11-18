@@ -72,6 +72,9 @@ www
 [debops_service_cryptpad]
 www
 
+[debops_service_roundcube]
+www
+
 [debops_service_dovecot]
 mail
 

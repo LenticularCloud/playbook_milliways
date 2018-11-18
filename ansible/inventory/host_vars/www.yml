@@ -1,5 +1,8 @@
 ---
 
+# for milliways jabber serer
+nginx_acme_domain: 'jabber.{{ ansible_domain }}'
+
 #nginx__server:
 #  - enable: True
 #    name: [ 'upload.jabber.{{ ansible_domain }}' ]

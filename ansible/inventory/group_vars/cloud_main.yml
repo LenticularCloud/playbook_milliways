@@ -53,6 +53,7 @@ jabber_ip: "{{ (((hostvars['jabber']|default({}))['ansible_default_ipv4'])|defau
 www_ip:    "{{ (((hostvars['www']   |default({}))['ansible_default_ipv4'])|default({}))['address']|default() }}"
 git_ip:    "{{ (((hostvars['git']   |default({}))['ansible_default_ipv4'])|default({}))['address']|default() }}"
 shell_ip:    "{{ (((hostvars['shell']   |default({}))['ansible_default_ipv4'])|default({}))['address']|default() }}"
+mail_ip:    "{{ (((hostvars['mail']   |default({}))['ansible_default_ipv4'])|default({}))['address']|default() }}"
 
 
 ferm__group_rules:
@@ -92,3 +93,15 @@ ferm__group_rules:
     private_ip: "{{ shell_ip }}"
     ports:
       - 2222
+  - type: 'dmz'
+    rule_state: "{{ 'present' if mail_ip else 'ignore' }}"
+    name: 'forward_mail'
+    multiport: True
+    public_ip: "{{ public_ip }}"
+    private_ip: "{{ mail_ip }}"
+    ports:
+      - 25 # smtp
+      - 143 # imap
+      - 587 # smtp submission
+      - 993 # imaps
+      - 4190 # mangesive

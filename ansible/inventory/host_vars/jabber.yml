@@ -1,0 +1,13 @@
+---
+
+
+# for milliways jabber on main domain
+prosody__domain: '{{ ansible_domain }}'
+
+pki_realms:
+  - name: '{{ ansible_domain }}'
+    acme_domains:
+     - 'jabber.{{ ansible_domain }}'
+     - 'conference.{{ ansible_domain }}'
+     - 'upload.{{ ansible_domain }}'
+

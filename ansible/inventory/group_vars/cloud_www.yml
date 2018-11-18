@@ -4,6 +4,19 @@
 
 git_ip:    "{{ (((hostvars['git']   |default({}))['ansible_default_ipv4'])|default({}))['address']|default() }}"
 
+
+roundcube__default_host: 'tls://mail.{{ ansible_domain }}'
+roundcube__smtp_server: 'tls://mail.{{ ansible_domain }}'
+roundcube__smtp_port: '587'
+roundcube__smtp_user: '%u'
+roundcube__smtp_pass: '%p'
+roundcube__plugins:
+  - 'managesieve'
+
+roundcube__host_local_config_map:
+  'managesieve_host': 'tls://mail.{{ ansible_domain }}'
+  'mail_domain': '{{ ansible_domain }}'
+
 pki_realms:
   - name: 'git.{{ ansible_domain }}'
     acme: True
@@ -19,9 +32,24 @@ pki_realms:
   - name: 'seafile.{{ ansible_domain }}'
     acme: True
     acme_default_subdomains: []
+  - name: 'roundcube.{{ ansible_domain }}'
+    acme: True
+    acme_default_subdomains: []
+  - name: '{{ ansible_domain }}'
+    acme: True
+    acme_default_subdomains: [ 'www' ]
 
 
 nginx__servers:
+  - enable: True
+    name: [ '{{ ansible_domain }}', 'www.{{ ansible_domain }}' ]
+    acme: True
+    #compatible with old system
+    location:
+      '/': |
+
+      '/pad/': |
+        rewrite ^/pad/(.*)$ https://epad.milliways.info/$1 last;
   - enable: True
     name: [ 'git.{{ ansible_domain }}' ]
     acme: True
@@ -32,7 +60,6 @@ nginx__servers:
     acme: True
     type: 'proxy'
     proxy_pass: 'https://calendar.{{ ansible_domain }}/'
-    deny_hidden: false
   - enable: True
     name: [ 'seafile.{{ ansible_domain }}' ]
     acme: True

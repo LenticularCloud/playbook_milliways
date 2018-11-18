@@ -8,6 +8,17 @@ packages:
   - 'dovecot-ldap'
   - 'postfix-ldap'
 
+# TODO check
+users__host_accounts:
+  - name: 'vmail'
+    system: True
+    uid: 5000
+    home: '/var/vmail'
+
+etc_aliases__admin_private_email:
+  - 'root@{{ ansible_domain }}'
+  - 'tuxcoder@{{ ansible_domain }}'
+
 pki_realms:
   - name: 'mail.{{ ansible_domain }}'
     acme: True
@@ -101,6 +112,8 @@ postfix__maincf:
     - 'ldap:/etc/postfix/ldap_virtual_users_maps.cf'
   - virtual_create_maildirsize: 'yes'
   - virtual_mailbox_extended: 'yes'
+  - virtual_transport: 'dovecot'
+  - transport_destination_recipient_limit: 1
 #  - virtual_mailbox_limit_maps: 'proxy:mysql:${config_directory}/mysql_virtual_mailbox_limit_maps.cf'
 #  - virtual_mailbox_limit_override: 'yes'
 #  - virtual_maildir_limit_message: "Sorry, the user's maildir has overdrawn his diskspace quota, please try again later."
@@ -113,8 +126,18 @@ postfix__maincf:
 
 dovecot_protocols:
   - 'imap'
+  - 'lmtp'
   - 'managesieve'
 
+dovecot_lmtp_config_map:
+  protocol:
+    mail_plugins: '$mail_plugins sieve'
+  service:
+    unix_listener:
+      /var/spool/postfix/private/dovecot-lmtp:
+        user: 'postfix'
+        group: 'postfix'
+        mode: 0600
 
 dovecot_user_accounts:
   - 'deny'
@@ -122,7 +145,7 @@ dovecot_user_accounts:
 
 dovecot_deny_users: []
 
-dovecot_mail_location: 'maildir:/var/vmail/%d/%u'
+#dovecot_mail_location: 'maildir:/var/vmail/%Ln'
 
 dovecot_ssl_protocols: '!SSLv3'
 dovecot_pki_realm: 'mail.{{ ansible_domain }}'
