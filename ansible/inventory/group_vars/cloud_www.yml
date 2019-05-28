@@ -16,6 +16,7 @@ roundcube__plugins:
 roundcube__host_local_config_map:
   'managesieve_host': 'tls://mail.{{ ansible_domain }}'
   'mail_domain': '{{ ansible_domain }}'
+roundcube__database: 'mysql-default'
 
 pki_realms:
   - name: 'git.{{ ansible_domain }}'
