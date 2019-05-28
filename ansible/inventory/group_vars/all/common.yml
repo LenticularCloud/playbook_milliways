@@ -10,5 +10,6 @@ pki_default_realms:
     acme: False
     default_subdomains: [ '{{ ansible_hostname }}' ]
 
-
+borg_client__borg_servers:
+  - 'backup2.cyberfred.eu'
 

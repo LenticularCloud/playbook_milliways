@@ -38,6 +38,9 @@ pki_realms:
   - name: '{{ ansible_domain }}'
     acme: True
     acme_default_subdomains: [ 'www' ]
+  - name: 'ttrss.{{ ansible_domain }}'
+    acme: True
+    acme_default_subdomains: []
 
 
 nginx__servers:
@@ -50,6 +53,11 @@ nginx__servers:
 
       '/pad/': |
         rewrite ^/pad/(.*)$ https://epad.milliways.info/$1 last;
+  - enable: True
+    name: [ 'ttrss.{{ ansible_domain }}' ]
+    type: 'php'
+    acme: True
+    php_upstream: 'php_ttrss'
   - enable: True
     name: [ 'git.{{ ansible_domain }}' ]
     acme: True
@@ -72,3 +80,25 @@ nginx__servers:
         proxy_set_header X-Forwarded-Port  443;
         proxy_pass https://seafile.milliways.info/;
         client_max_body_size 0;
+
+nginx_upstreams:
+  - enabled: True
+    name: 'php_ttrss'
+    type: 'php5'
+    php5: 'www-ttrss'
+
+
+php__fpm_pm: 'dynamic'
+php__pools:
+  - name: 'www-ttrss'
+    owner: 'www-ttrss'
+    home: '/srv/www/sites/ttrss.{{ ansible_domain }}'
+
+
+mariadb__dependent_users:
+  - user: 'ttrss'
+    database: 'ttrss'
+    owner: 'www-ttrss'
+
+mariadb__dependent_databases:
+  - name: 'ttrss'

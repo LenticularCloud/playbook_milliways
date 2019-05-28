@@ -101,6 +101,7 @@ db
 
 [debops_service_mariadb]
 git
+www
 
 [debops_service_prometheus_server]
 monitor
@@ -133,6 +134,6 @@ seafile
 debops_all_hosts
 
 
-#[debops_service_borg_client:children]
-#cloud_main
+[debops_service_borg_client:children]
+cloud_main
 

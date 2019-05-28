@@ -112,6 +112,12 @@ slapd_ldap_access_control_list_default:
     by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
     by {{ slapd_acl_tls_ssf }} dn="uid=root,ou=users,dc=git_gogs,{{ slapd_basedn }}" read
   - |
+    to dn.subtree="dc=ttrss,{{ slapd_basedn }}"
+    by {{ slapd_acl_tls_ssf }} self write
+    by {{ slapd_acl_tls_ssf }} dn="cn=ttrss,{{ slapd_basedn }}" read
+    by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
+    by {{ slapd_acl_tls_ssf }} dn="uid=root,ou=users,dc=ttrss,{{ slapd_basedn }}" read
+  - |
     to dn.base=""
     by {{ slapd_acl_tls_ssf }} * read
 

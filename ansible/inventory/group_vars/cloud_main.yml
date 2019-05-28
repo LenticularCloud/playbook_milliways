@@ -23,6 +23,13 @@ lxc_default_configure:
     - type: ' veth'
       link: 'br2'
 
+borg_client__encryption_passphrase: '{{ lookup("password", secret + "/borg/" + ansible_host) }}'
+
+borg_client__backup_dirs:
+  - '/var/lib/lxc'
+
+borg_client__user: 'backup_og'
+
 
 
 lxc_containers:

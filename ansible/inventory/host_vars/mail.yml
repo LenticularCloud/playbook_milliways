@@ -106,7 +106,7 @@ postfix__maincf:
   - virtual_mailbox_base: '/var/vmail'
   - virtual_mailbox_domains: '{{ ansible_domain }}'
   - virtual_alias_maps:
-    - 'hash:/etc/aliases'
+    - 'hash:/etc/postfix/virtual'
     - 'ldap:/etc/postfix/ldap_virtual_alias_maps.cf'
   - virtual_mailbox_maps:
     - 'ldap:/etc/postfix/ldap_virtual_users_maps.cf'
