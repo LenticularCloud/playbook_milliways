@@ -1,0 +1,13 @@
+---
+
+# for milliways jabber serer
+nginx_acme_domain: 'git.{{ ansible_domain }}'
+
+nginx__servers:
+  - enable: True
+    name: [ 'git.{{ ansible_domain }}' ]
+    acme: True
+    type: 'proxy'
+    proxy_pass: 'http://localhost:3000'
+
+

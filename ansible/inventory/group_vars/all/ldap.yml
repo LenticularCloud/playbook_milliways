@@ -110,6 +110,7 @@ slapd_ldap_access_control_list_default:
     by {{ slapd_acl_tls_ssf }} self write
     by {{ slapd_acl_tls_ssf }} dn="uid=git_gogs,ou=machines,{{ slapd_basedn }}" read
     by {{ slapd_acl_tls_ssf }} dn="{{ slapd_basedn_admin }}" write
+    by {{ slapd_acl_tls_ssf }} dn="cn=git_gogs,{{ slapd_basedn }}" read
     by {{ slapd_acl_tls_ssf }} dn="uid=root,ou=users,dc=git_gogs,{{ slapd_basedn }}" read
   - |
     to dn.subtree="dc=ttrss,{{ slapd_basedn }}"
